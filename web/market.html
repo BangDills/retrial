@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Retrial — NFT Marketplace (BSC)</title>
+  <link rel="stylesheet" href="styles.css" />
+  <!-- Ethers v6 UMD from jsdelivr (No bundler, static site) -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6/dist/ethers.umd.min.js"></script>
+  <!-- Generated config -->
+  <script src="config.js"></script>
+  <!-- app.js provides window.RETRIAL_ABI and shared helpers -->
+  <script src="app.js"></script>
+  <!-- Marketplace logic -->
+  <script src="market.js"></script>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container nav-container">
+      <a href="index.html" class="brand-link">
+        <span class="brand-logo">R</span>
+        <span>Retrial</span>
+      </a>
+      <div class="nav-links">
+        <a href="index.html" class="nav-item">Mint</a>
+        <a href="market.html" class="nav-item active">Marketplace</a>
+      </div>
+      <div class="nav-actions">
+        <span id="market-network-badge" class="badge">
+          <span class="badge-dot"></span> Chain: -
+        </span>
+        <button id="market-connect-wallet-btn" class="btn btn-primary btn-sm">Connect Wallet</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Marketplace Container -->
+  <main class="container" id="market-app" style="padding-top: 24px; padding-bottom: 60px;">
+    <!-- Inline Alerts -->
+    <div id="market-chain-alert" class="alert hidden"></div>
+    <div id="market-wallet-alert" class="alert hidden"></div>
+    <div id="market-page-alert" class="alert hidden"></div>
+    <div id="market-action-alert" class="alert hidden"></div>
+
+    <!-- Header Section -->
+    <section class="hero" style="padding: 24px 0 32px;">
+      <span class="hero-tag">Escrow Trading &middot; 0% Marketplace Fee</span>
+      <h1 class="hero-title">Retrial Marketplace</h1>
+      <p class="hero-desc">
+        Trade verified challenge-gated NFTs with native BNB escrow security.
+      </p>
+    </section>
+
+    <!-- Active Listings Section -->
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">
+            Active Listings (<span id="stat-active-listings">0</span>)
+          </h2>
+          <p class="card-desc">NFTs currently listed for sale on the marketplace contract.</p>
+        </div>
+        <button id="refresh-market-btn" class="btn btn-secondary btn-sm">Refresh Listings</button>
+      </div>
+
+      <div id="listings-empty" class="empty-state hidden">
+        <div class="empty-state-icon">🏷️</div>
+        <h3>No Active Listings</h3>
+        <p>There are currently no Retrial NFTs listed for sale. Be the first to list yours below!</p>
+      </div>
+
+      <div id="listings-grid" class="market-grid">
+        <div class="text-muted" style="grid-column: 1/-1;">Loading listings...</div>
+      </div>
+    </section>
+
+    <!-- My NFTs & Listing Management Section -->
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">My NFTs & Listing Management</h2>
+          <p class="card-desc">Approve & list your tokens for sale, update existing listing prices, or cancel listings to return NFTs to your wallet.</p>
+        </div>
+      </div>
+
+      <div id="my-nfts-alert" class="alert hidden"></div>
+
+      <!-- Quick Token Lookup -->
+      <div style="background: var(--bg-card-inner); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; margin-bottom: 24px;">
+        <label style="font-size: 0.82rem; font-weight: 600; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 8px;">
+          Lookup Token by ID
+        </label>
+        <div class="input-group">
+          <input type="number" min="1" id="lookup-token-id" class="input-control input-flex font-mono" placeholder="Enter Token ID (e.g. 1)" />
+          <button id="lookup-token-btn" class="btn btn-secondary">Check Token</button>
+        </div>
+        <div id="lookup-result" class="hidden" style="margin-top: 10px;"></div>
+      </div>
+
+      <div id="my-nfts-not-connected" class="empty-state">
+        <div class="empty-state-icon">👛</div>
+        <h3>Connect Wallet</h3>
+        <p>Connect your Web3 wallet to view your owned NFTs and manage listings.</p>
+      </div>
+
+      <div id="my-nfts-empty" class="empty-state hidden">
+        <div class="empty-state-icon">🎨</div>
+        <h3>No NFTs Found In Your Connected Wallet</h3>
+        <p>You don't own any Retrial NFTs in this wallet yet. <a href="index.html">Solve the challenge and mint one!</a></p>
+      </div>
+
+      <div id="my-nfts-grid" class="market-grid"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      Retrial NFT Marketplace &middot; Escrow-Protected BNB Smart Chain Trading
+    </div>
+  </footer>
+</body>
+</html>

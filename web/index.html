@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Retrial — Challenge-Gated NFT Mint (BSC)</title>
+  <link rel="stylesheet" href="styles.css" />
+  <!-- Ethers v6 UMD from jsdelivr (No bundler, static site) -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6/dist/ethers.umd.min.js"></script>
+  <!-- Generated config -->
+  <script src="config.js"></script>
+  <!-- Main app script -->
+  <script src="app.js"></script>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container nav-container">
+      <a href="index.html" class="brand-link">
+        <span class="brand-logo">R</span>
+        <span>Retrial</span>
+      </a>
+      <div class="nav-links">
+        <a href="index.html" class="nav-item active">Mint</a>
+        <a href="market.html" class="nav-item">Marketplace</a>
+      </div>
+      <div class="nav-actions">
+        <span id="network-badge" class="badge">
+          <span class="badge-dot"></span> Chain: -
+        </span>
+        <button id="connect-wallet-btn" class="btn btn-primary btn-sm">Connect Wallet</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Mint Container -->
+  <main class="container" id="mint-app" style="padding-top: 20px; padding-bottom: 60px;">
+    <!-- Inline Alerts -->
+    <div id="chain-alert" class="alert hidden"></div>
+    <div id="wallet-alert" class="alert hidden"></div>
+    <div id="page-alert" class="alert hidden"></div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+      <span class="hero-tag">Proof-of-Work Gated NFT</span>
+      <h1 class="hero-title">Retrial NFT Mint</h1>
+      <p class="hero-desc">
+        Every mint requires solving an on-chain proof-of-work challenge. Solving it entitles the solver to mint 1 NFT. Verified trustlessly on BNB Smart Chain.
+      </p>
+
+      <!-- Headline Price Box -->
+      <div class="headline-price-box">
+        <div>
+          <div class="headline-label">Mint Price</div>
+          <div class="headline-price">FREE <span class="headline-sub">(gas only)</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats Grid -->
+    <section class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Minted</div>
+        <div id="stat-minted" class="stat-val font-mono">- / 3000</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Remaining</div>
+        <div id="stat-remaining" class="stat-val font-mono">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Difficulty</div>
+        <div id="stat-difficulty" class="stat-val font-mono">- bits</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Your Mints / Cap</div>
+        <div id="stat-cap" class="stat-val font-mono">- / 5</div>
+      </div>
+    </section>
+
+    <!-- Fee Detail Table Card -->
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">Fee Detail Table</h2>
+          <p class="card-desc">Headline price stays FREE; actual on-chain fee and estimated execution cost are detailed below.</p>
+        </div>
+      </div>
+      <div class="fee-table-container">
+        <table class="fee-table">
+          <thead>
+            <tr>
+              <th>Fee Component</th>
+              <th>Amount</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Headline Price</strong></td>
+              <td><span class="badge-free">FREE</span></td>
+              <td>Requires solving on-chain PoW challenge</td>
+            </tr>
+            <tr>
+              <td><strong>On-chain Mint Fee</strong></td>
+              <td><span class="font-mono">0.00008 BNB</span></td>
+              <td>80,000,000,000,000 wei collected by the contract</td>
+            </tr>
+            <tr>
+              <td><strong>Estimated Network Gas</strong></td>
+              <td><span id="gas-estimate" class="font-mono">~0.000015 BNB</span></td>
+              <td>~145,000 gas units (paid to network validators)</td>
+            </tr>
+            <tr class="fee-table-total">
+              <td><strong>Total Estimated Cost</strong></td>
+              <td><strong id="total-estimate" class="font-mono text-primary">~0.00044 BNB</strong></td>
+              <td>Mint fee + estimated network gas</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Mint & Solver Section Card -->
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">Solve Challenge & Mint</h2>
+          <p class="card-desc">Click "Solve Challenge" to compute a valid proof-of-work nonce in your browser. The found nonce will be verified on-chain via <code>powValid()</code> before enabling Mint.</p>
+        </div>
+      </div>
+
+      <div id="mint-alert" class="alert hidden"></div>
+
+      <div class="solver-box">
+        <div class="solver-status-grid">
+          <div>
+            <div class="solver-metric-label">Hashrate</div>
+            <div id="solver-hashrate" class="solver-metric-val font-mono">0 H/s</div>
+          </div>
+          <div>
+            <div class="solver-metric-label">Hashes Tested</div>
+            <div id="solver-hashes" class="solver-metric-val font-mono">0</div>
+          </div>
+          <div style="grid-column: span 2;">
+            <div class="solver-metric-label">Status</div>
+            <div id="solver-status" class="solver-metric-val font-mono" style="font-size: 0.95rem;">Ready to solve</div>
+          </div>
+        </div>
+
+        <!-- Verified badge -->
+        <div id="verified-box" class="pow-verified-box hidden">
+          <span style="font-size: 1.3rem;">✅</span>
+          <span id="verified-text"></span>
+        </div>
+
+        <!-- Actions -->
+        <div class="action-row">
+          <button id="solve-btn" class="btn btn-secondary btn-lg">Solve Challenge</button>
+          <button id="stop-btn" class="btn btn-danger btn-lg hidden">Stop Solver</button>
+          <button id="mint-btn" class="btn btn-secondary btn-lg" disabled>Mint NFT</button>
+        </div>
+
+        <!-- Result Card for Minted NFT -->
+        <div id="mint-result-card" class="mint-result-card hidden">
+          <div id="mint-result-preview" class="mint-result-preview"></div>
+          <div class="mint-result-details">
+            <h4 id="mint-result-title">Retrial #</h4>
+            <p id="mint-result-desc" class="mint-result-desc"></p>
+            <div id="mint-result-attributes" class="attribute-tags"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Agent Mode (Binance Agentic Wallet) Panel -->
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">Agent mode (Binance Agentic Wallet)</h2>
+          <p class="card-desc">Solve the proof of work for an agent wallet and generate the exact <code>baw contract-call</code> CLI commands. (Copy only — do not run automatically).</p>
+        </div>
+      </div>
+
+      <div id="agent-alert" class="alert hidden"></div>
+
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <div class="input-group">
+          <input type="text" id="agent-wallet-input" class="input-control input-flex font-mono" placeholder="Agent Wallet Address (0x...)" />
+          <button id="agent-solve-btn" class="btn btn-secondary">Generate BAW Commands</button>
+        </div>
+        <div id="agent-status" class="font-mono text-muted" style="font-size: 0.85rem;"></div>
+
+        <div id="agent-commands-panel" class="code-panel hidden">
+          <div class="code-panel-header">
+            <span class="code-panel-title">1) Preview Command</span>
+            <button id="copy-preview-btn" class="btn btn-secondary btn-sm">Copy</button>
+          </div>
+          <pre class="code-block"><code id="agent-preview-cmd"></code></pre>
+
+          <div class="code-panel-header">
+            <span class="code-panel-title">2) Execute Command</span>
+            <button id="copy-execute-btn" class="btn btn-secondary btn-sm">Copy</button>
+          </div>
+          <pre class="code-block"><code id="agent-execute-cmd"></code></pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      Retrial NFT &middot; On-chain Challenge-Gated Proof-of-Work Mint &middot; BNB Smart Chain
+    </div>
+  </footer>
+</body>
+</html>
